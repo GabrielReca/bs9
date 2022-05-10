@@ -1,10 +1,12 @@
 package com.example.DB1JPA.infrastructure.dto.input;
 
+import com.example.DB1JPA.domain.Asignatura;
 import com.example.DB1JPA.domain.Persona;
+import com.example.DB1JPA.domain.Profesor;
 import lombok.Getter;
 
-import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Getter
 public class EstudianteInputDTO implements Serializable {
@@ -19,5 +21,8 @@ public class EstudianteInputDTO implements Serializable {
 
     private Persona persona;
 
-    private String id_profesor;
+    private Profesor profesor;
+
+    private List<Asignatura> asignaturas;
+
 }

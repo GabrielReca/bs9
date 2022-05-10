@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PersonaRepository extends CrudRepository<Persona, String> {
+public interface PersonaRepository extends CrudRepository<Persona, Integer> {
     @Query("SELECT p FROM Persona p WHERE p.usuario = ?1")
     Persona buscarPersona(String usuario);
 

@@ -10,6 +10,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,7 +32,7 @@ public class Estudiante implements Serializable
 
                     @org.hibernate.annotations.Parameter(name = StringIdGenerator.INCREMENT_PARAM, value = "1"),
 
-                    @org.hibernate.annotations.Parameter(name = StringIdGenerator.VALUE_PREFIX_PARAMETER, value = "AUS"),
+                    @org.hibernate.annotations.Parameter(name = StringIdGenerator.VALUE_PREFIX_PARAMETER, value = "ALUM"),
 
                     @org.hibernate.annotations.Parameter(name = StringIdGenerator.NUMBER_FORMAT_PARAMETER, value = "%08d")
 
@@ -48,12 +49,16 @@ public class Estudiante implements Serializable
     private String comentarios;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_persona")
+    @JoinColumn(name = "persona")
     private Persona persona;
 
-  /*  @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_profesor")
-    private String id_profesor;*/
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profesor")
+    private Profesor profesor;
+
+    @ManyToMany(cascade = CascadeType.MERGE)
+    @JoinTable(name = "asignaturas", joinColumns = @JoinColumn(name = "id_estudiante"), inverseJoinColumns = @JoinColumn(name = "id_asignatura"))
+    private List<Asignatura> asignaturas;
 
     public Estudiante(EstudianteInputDTO estudianteInputDTO)
     {
@@ -62,6 +67,7 @@ public class Estudiante implements Serializable
         setNumeroHorasSemanales(estudianteInputDTO.getNumeroHorasSemanales());
         setComentarios(estudianteInputDTO.getComentarios());
         setPersona(estudianteInputDTO.getPersona());
-      /*  setId_profesor(estudianteInputDTO.getId_profesor());*/
+        setProfesor(estudianteInputDTO.getProfesor());
+        setAsignaturas(estudianteInputDTO.getAsignaturas());
     }
 }

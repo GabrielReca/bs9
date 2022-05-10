@@ -1,9 +1,14 @@
 package com.example.DB1JPA.application;
 
 import com.example.DB1JPA.application.port.PersonaService;
+import com.example.DB1JPA.domain.Estudiante;
 import com.example.DB1JPA.domain.Persona;
+import com.example.DB1JPA.domain.Profesor;
 import com.example.DB1JPA.infrastructure.dto.input.PersonaInputDTO;
+import com.example.DB1JPA.infrastructure.dto.output.EstudiantePersonaOutputDTO;
 import com.example.DB1JPA.infrastructure.dto.output.PersonaOutputDTO;
+import com.example.DB1JPA.infrastructure.dto.output.ProfesorOutputDTO;
+import com.example.DB1JPA.infrastructure.dto.output.ProfesorPersonaOutputDTO;
 import com.example.DB1JPA.infrastructure.repository.PersonaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +37,7 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
-    public PersonaOutputDTO modificarPersona(String id, PersonaInputDTO personaInputDTO) throws Exception {
+    public PersonaOutputDTO modificarPersona(int id, PersonaInputDTO personaInputDTO) throws Exception {
         if(personaInputDTO.getUsuario() == null)
             throw new Exception("usuario puede ser nulo");
         else if(personaInputDTO.getUsuario().length() > 10 || personaInputDTO.getUsuario().length() < 6)
@@ -47,7 +52,7 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
-    public PersonaOutputDTO buscarPorID(String id) throws Exception {
+    public PersonaOutputDTO buscarPorID(int id) throws Exception {
         Persona persona = pr.findById(id).orElseThrow(() -> new Exception("id no encontrado"));
         PersonaOutputDTO personaOutputDTO = new PersonaOutputDTO(persona);
         return personaOutputDTO;
@@ -68,6 +73,44 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
+    public EstudiantePersonaOutputDTO buscarAlumnoAsociado(int id) throws Exception {
+        Persona persona = pr.findById(id).orElseThrow(() -> new Exception("id no encontrado"));
+        Estudiante estudiante = persona.getEstudiante();
+        EstudiantePersonaOutputDTO estudiantePersonaOutputDTO = new EstudiantePersonaOutputDTO(estudiante, persona);
+        return estudiantePersonaOutputDTO;
+    }
+
+    @Override
+    public EstudiantePersonaOutputDTO buscarAlumnoAsociadoPorUsuario(String usuario) throws Exception {
+        Persona persona = pr.buscarPersona(usuario);
+        Estudiante estudiante = persona.getEstudiante();
+        EstudiantePersonaOutputDTO estudiantePersonaOutputDTO = new EstudiantePersonaOutputDTO(estudiante, persona);
+        return estudiantePersonaOutputDTO;
+    }
+
+    @Override
+    public ProfesorPersonaOutputDTO buscarProfesorAsociadoporUsuario(String usuario) throws Exception {
+        Persona persona = pr.buscarPersona(usuario);
+        Profesor profesor = persona.getProfesor();
+        ProfesorPersonaOutputDTO profesorPersonaOutputDTO = new ProfesorPersonaOutputDTO(profesor, persona);
+        return profesorPersonaOutputDTO;
+    }
+
+    @Override
+    public ProfesorPersonaOutputDTO buscarProfesorAsociado(int id) throws Exception {
+        Persona persona = pr.findById(id).orElseThrow(() -> new Exception("id no encontrado"));
+        Profesor profesor = persona.getProfesor();
+        ProfesorPersonaOutputDTO profesorPersonaOutputDTO = new ProfesorPersonaOutputDTO(profesor, persona);
+        return profesorPersonaOutputDTO;
+    }
+
+    @Override
+    public Persona GETgetProfesor(int id) {
+        Persona persona = pr.findById(id).get();
+        return persona;
+    }
+
+    @Override
     public PersonaOutputDTO busquedaUsuario(String usuario) throws Exception {
         if(usuario == null)
             throw new Exception("usuario puede ser nulo");
@@ -81,7 +124,7 @@ public class PersonaServiceImpl implements PersonaService {
     }
 
     @Override
-    public PersonaOutputDTO eliminarUsuario(String id) throws Exception {
+    public PersonaOutputDTO eliminarUsuario(int id) throws Exception {
         Persona persona = pr.findById(id).get();
         PersonaOutputDTO personaOutputDTO = new PersonaOutputDTO(persona);
         pr.deleteById(id);

@@ -1,11 +1,18 @@
 package com.example.DB1JPA.infrastructure.controller;
 
+import com.example.DB1JPA.application.port.EstudianteService;
+import com.example.DB1JPA.application.port.IFeignServer;
+import com.example.DB1JPA.application.port.ProfesorService;
 import com.example.DB1JPA.infrastructure.dto.input.PersonaInputDTO;
+import com.example.DB1JPA.infrastructure.dto.output.EstudiantePersonaOutputDTO;
 import com.example.DB1JPA.infrastructure.dto.output.PersonaOutputDTO;
 import com.example.DB1JPA.application.port.PersonaService;
+import com.example.DB1JPA.infrastructure.dto.output.ProfesorOutputDTO;
+import com.example.DB1JPA.infrastructure.dto.output.ProfesorPersonaOutputDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -16,36 +23,112 @@ public class PersonaController {
     @Autowired
     PersonaService ps;
 
-    @GetMapping("/busqueda/id/{id}")
-    public ResponseEntity busquedaID(@PathVariable String id) throws Exception {
-        PersonaOutputDTO personaOutputDTO;
-        try{
-            personaOutputDTO = ps.buscarPorID(id);
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body("usuario puede ser nulo");
+    @Autowired
+    EstudianteService es;
+
+    @Autowired
+    ProfesorService pfr;
+
+    @Autowired
+    IFeignServer iFeignServer;
+
+    @GetMapping(value = "/busqueda/id/{id}", params = "outputType")
+    public ResponseEntity busquedaID(@PathVariable int id, @RequestParam String outputType) throws Exception {
+        if(outputType.equals("simple")) {
+            PersonaOutputDTO personaOutputDTO;
+            try {
+                personaOutputDTO = ps.buscarPorID(id);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("usuario puede ser nulo");
+            }
+            return ResponseEntity.ok(personaOutputDTO);
+        } else if (outputType.equals("estudiante")) {
+            EstudiantePersonaOutputDTO estudiantePersonaOutputDTO;
+            try {
+                estudiantePersonaOutputDTO = ps.buscarAlumnoAsociado(id);
+            }catch (Exception e){
+                return ResponseEntity.badRequest().body("usuario puede ser nulo");
+            }
+            return ResponseEntity.ok().body(estudiantePersonaOutputDTO);
         }
-        return ResponseEntity.ok(personaOutputDTO);
+        else if (outputType.equals("profesor")) {
+            ProfesorPersonaOutputDTO profesorPersonaOutputDTO;
+            try {
+                profesorPersonaOutputDTO = ps.buscarProfesorAsociado(id);
+            }catch (Exception e){
+                return ResponseEntity.badRequest().body("usuario puede ser nulo");
+            }
+            return ResponseEntity.ok().body(profesorPersonaOutputDTO);
+        }
+        return null;
     }
 
-    @GetMapping("/busqueda/todos")
-    public ResponseEntity busquedaTodos() throws Exception {
-        List<PersonaOutputDTO> listaOutput = ps.busquedaTodos();
-        return ResponseEntity.ok(listaOutput);
+    @GetMapping(value = "/busqueda/todos", params = "outputType")
+    public ResponseEntity busquedaTodos(@RequestParam String outputType) throws Exception {
+        if(outputType.equals("simple")) {
+            List<PersonaOutputDTO> listaOutput = ps.busquedaTodos();
+            return ResponseEntity.ok(listaOutput);
+        } else if (outputType.equals("estudiante")) {
+            List<EstudiantePersonaOutputDTO> lista = es.busquedaTodosFull();
+            return ResponseEntity.ok().body(lista);
+        } else if (outputType.equals("profesor")) {
+            List<ProfesorPersonaOutputDTO> lista = pfr.buscarTodosFull();
+            return ResponseEntity.ok().body(lista);
+        }
+        return null;
     }
 
-    @GetMapping("/busqueda/usuario/{usuario}")
-    public ResponseEntity busquedaTodos(@PathVariable String usuario) throws Exception {
-        PersonaOutputDTO personaOutputDTO;
-        try{
-            personaOutputDTO = ps.busquedaUsuario(usuario);
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body("usuario puede ser nulo");
+    @GetMapping(value = "/busqueda/usuario/{usuario}", params = "outputType")
+    public ResponseEntity busquedaUsuario(@PathVariable String usuario, @RequestParam String outputType) throws Exception {
+
+        if(outputType.equals("simple")) {
+            PersonaOutputDTO personaOutputDTO;
+            try {
+                personaOutputDTO = ps.busquedaUsuario(usuario);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("usuario puede ser nulo");
+            }
+            return ResponseEntity.ok(personaOutputDTO);
+        } else if (outputType.equals("estudiante")) {
+            EstudiantePersonaOutputDTO estudiantePersonaOutputDTO;
+            try {
+                estudiantePersonaOutputDTO = ps.buscarAlumnoAsociadoPorUsuario(usuario);
+            }catch (Exception e){
+                return ResponseEntity.badRequest().body("usuario puede ser nulo");
+            }
+            return ResponseEntity.ok().body(estudiantePersonaOutputDTO);
+        } else if (outputType.equals("profesor")) {
+            ProfesorPersonaOutputDTO profesorPersonaOutputDTO;
+            try {
+                profesorPersonaOutputDTO = ps.buscarProfesorAsociadoporUsuario(usuario);
+            }catch (Exception e){
+                return ResponseEntity.badRequest().body("usuario puede ser nulo");
+            }
+            return ResponseEntity.ok().body(profesorPersonaOutputDTO);
         }
-        return ResponseEntity.ok(personaOutputDTO);
+        return null;
+    }
+
+    //por restTemplate
+    @GetMapping("/profesor/{id}")
+    ProfesorOutputDTO GETgetProfesor(@PathVariable int id)
+    {
+        ResponseEntity<ProfesorOutputDTO> rs = new RestTemplate().getForEntity("http://localhost:8081/persona/profesor/id/"+id, ProfesorOutputDTO.class);
+        ProfesorOutputDTO profesorOutputDTO = rs.getBody();
+        return profesorOutputDTO;
+    }
+
+    //por Ifeign
+    @GetMapping("{id}")
+    ProfesorOutputDTO GETgetProfesorFeign(@PathVariable int id)
+    {
+        ResponseEntity<ProfesorOutputDTO> rs = iFeignServer.callServer(id);
+        ProfesorOutputDTO profesorOutputDTO = rs.getBody();
+        return profesorOutputDTO;
     }
 
     @PutMapping("/modificar/{id}")
-    public ResponseEntity modificarPersona(@PathVariable String id, @RequestBody PersonaInputDTO personaDto) throws Exception
+    public ResponseEntity modificarPersona(@PathVariable int id, @RequestBody PersonaInputDTO personaDto) throws Exception
     {
         PersonaOutputDTO personaOutputDTO;
         try {
@@ -68,7 +151,7 @@ public class PersonaController {
     }
 
     @DeleteMapping("/borrar/{id}")
-    public ResponseEntity borrarPersona(@PathVariable String id) throws Exception {
+    public ResponseEntity borrarPersona(@PathVariable int id) throws Exception {
         PersonaOutputDTO personaOutputDTO = ps.eliminarUsuario(id);
         return ResponseEntity.ok(personaOutputDTO);
     }

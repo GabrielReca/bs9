@@ -1,7 +1,7 @@
 package com.example.DB1JPA.infrastructure.dto.output;
 
 import com.example.DB1JPA.domain.Estudiante;
-import com.example.DB1JPA.domain.Persona;
+import com.example.DB1JPA.domain.Profesor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +23,7 @@ public class EstudianteOutputDTO implements Serializable {
 
     private String comentarios;
 
-    private String id_profesor;
+    private Profesor profesor;
 
     public EstudianteOutputDTO(Estudiante estudiante)
     {
@@ -31,6 +31,6 @@ public class EstudianteOutputDTO implements Serializable {
         setNumeroHorasSemanales(estudiante.getNumeroHorasSemanales());
         setRama(estudiante.getRama());
         setComentarios(estudiante.getComentarios());
-/*        setId_profesor(estudiante.getId_profesor());*/
+        setProfesor(estudiante.getProfesor());
     }
 }

@@ -4,6 +4,7 @@ package com.example.DB1JPA.application.port;
 import com.example.DB1JPA.infrastructure.dto.input.EstudianteInputDTO;
 import com.example.DB1JPA.infrastructure.dto.output.EstudianteOutputDTO;
 import com.example.DB1JPA.infrastructure.dto.output.EstudiantePersonaOutputDTO;
+import com.example.DB1JPA.infrastructure.dto.output.PersonaOutputDTO;
 
 import java.util.List;
 
@@ -13,7 +14,8 @@ public interface EstudianteService {
 
     EstudiantePersonaOutputDTO buscarPorIDFull(String id) throws Exception;
 
-    List<EstudianteOutputDTO> busquedaTodos();
+    List<EstudiantePersonaOutputDTO> busquedaTodosFull() throws Exception;
+    EstudiantePersonaOutputDTO busquedaPorUsuario(String usuario) throws Exception;
 
     EstudianteOutputDTO anhadirEstudiante(EstudianteInputDTO estudianteInputDTO) throws Exception;
 
